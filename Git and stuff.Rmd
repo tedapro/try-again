@@ -1,0 +1,206 @@
+---
+title: "Git and stuff"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+
+```
+
+```{r}
+library(car)
+library(GGally)
+library(performance)
+library(infer)
+library(tidyverse)
+```
+
+```{r}
+df_WtDo <- read_csv("Santori_Wt_Change.csv")
+
+df_WtDo %>% 
+  ggplot(aes(x = MID)) +
+  geom_histogram()
+
+df_WtDo %>% 
+  ggplot(aes(x = Before)) +
+  geom_histogram()
+
+df_WtDo %>% 
+  ggplot(aes(x = After)) +
+  geom_histogram()
+
+df_WtDo %>% 
+  ggplot(aes(x = Wt_change)) +
+  geom_histogram()
+
+
+
+
+
+
+```
+
+```{r}
+# Calculate After - Before - Wt_change
+difference <- with(df_WtDo, After - Before - Wt_change)
+
+# Plot a histogram
+hist(difference,
+     main = "Check of recorded weight change",
+     xlab = "After - Before - Wt_change",
+     col = "lightblue",
+     breaks = 30)
+
+```
+
+
+```{r}
+  # before weight= 100kg, after weight =10kg, wt_change=50 kg
+# 50-100+10= 60
+
+df_WtDo %>%
+  group_by(Diet) %>%
+  summarise(N = n())
+
+df_WtDo_lo_hi<- df_WtDo %>%
+  filter(Diet %in% c(36,84))
+
+# Q2. What kind of plot would best illustrate the pattern?
+# a box pllot would be awsome, but we are not gonna do that
+
+#Q3. What are your guesses for the mean values (in a notebook or in annotations) for each level of the predictor?
+# I reccon the higher grade of food the higher the weight gain
+
+lm_wt_change_2level <- lm(Wt_change ~ factor(Diet),
+                          data = df_WtDo_lo_hi)
+
+check_model(lm_wt_change_2level)
+
+
+df_WtDo_lo_hi %>% 
+  ggplot(aes(x = Diet, y = Wt_change)) +
+  geom_point()
+
+
+lm_wt_change_cont <- lm(Wt_change ~ factor(Diet),
+                          data = df_WtDo)
+
+
+check_model(lm_wt_change_cont)
+
+
+df_WtDo %>% 
+  ggplot(aes(x = Diet, y = Wt_change)) +
+  geom_point()
+
+mod1 <- aov(Wt_change ~ factor(Diet), data = df_WtDo)
+
+summary(mod1)
+
+mod2 <- aov(Wt_change ~ factor(Diet), data = df_WtDo_lo_hi)
+
+summary(mod2)
+
+# Q5: What does the suffix (number 84) mean in the table of coefficients?
+# diet "score 84"
+
+# Q6. Why doesn’t the model just estimate the intercept for each group as a deviation from the global mean, instead of estimating a reference intercept and deviations?
+# 
+
+summary(lm_wt_change_cont)
+
+
+t.test(Wt_change ~ Diet,
+       data=df_WtDo_lo_hi)
+
+
+df_WtDo_lo_hi %>%
+  t_test(Wt_change ~ Diet)
+
+
+aov_wt_change_2level <- aov(Wt_change ~ Diet,
+                            data=df_WtDo_lo_hi)
+
+
+summary(aov_wt_change_2level)
+
+
+```
+
+
+
+Q7. Which of these tests and summaries provides information on signs and magnitudes of the effects?
+the anova is kinda silly to use here since we only have two "datapoints", however the other two are close to equal.
+
+ Q8. Consider the summary of the linear model you built above, and try to reconstruct the equation for the line of best fit. What do the two coefficients refer to? Can you work out what X represents in the equation?
+
+```{r}
+lm_wt_change_5level <- lm(Wt_change ~ factor(Diet), data = df_WtDo)
+
+check_model(lm_wt_change_5level)
+
+summary(lm_wt_change_5level)
+
+df_Santori_fac <- df_WtDo %>%
+  
+  mutate(Diet_fac = factor(Diet)) %>% 
+  
+  mutate(Diet_fac = fct_relevel(Diet_fac, "60"))
+
+```
+
+check if this worked  vv
+
+```{r}
+levels(df_Santori_fac$Diet_fac)
+
+
+
+lm_wt_change_5level_60ref <- lm(Wt_change ~ Diet_fac,
+                                
+                                data = df_Santori_fac) 
+
+summary(lm_wt_change_5level_60ref)
+
+
+lm_wt_change_5level <- lm(Wt_change ~ factor(Diet), data = df_WtDo)
+
+check_model(lm_wt_change_5level)
+summary(lm_wt_change_5level)
+
+df_Santori_fac <- df_WtDo %>%
+  mutate(Diet_fac = factor(Diet)) %>% 
+  mutate(Diet_fac = fct_relevel(Diet_fac, "60"))
+# check that this worked
+levels(df_Santori_fac$Diet_fac)
+
+lm_wt_change_5level_60ref <- lm(Wt_change ~ Diet_fac,
+                                data = df_Santori_fac) 
+summary(lm_wt_change_5level_60ref)
+
+df_new_wt_change <-
+  crossing(Diet = c(36,48,60,72,84))
+
+preds <- predict(lm_wt_change_5level, 
+                 newdata = df_new_wt_change,
+                 int = "c")
+
+df_preds <- bind_cols(df_new_wt_change, as_tibble(preds))
+df_preds %>%
+  ggplot(aes(x = Diet, y = fit)) +
+  geom_jitter(data = df_WtDo, aes(y = Wt_change),
+ alpha = 0.3, height = 0, width = 1) +
+  geom_pointrange(aes(y = fit,
+                      ymin = lwr,
+                      ymax = upr),
+                  colour = "red",
+                  size = 1.2) + labs(y = "Weight change (g)",
+                                     x = "Diet (% nutrition)")  
+
+```
+
