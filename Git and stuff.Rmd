@@ -2,10 +2,11 @@
 title: "Git and stuff"
 output: html_document
 ---
+Purpose
+Does mean weight change differ among five diet levels?
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+Data
+The data are imported from Santori_Wt_Change.csv, supplied for the course. Each row represents an observation, with columns for ID (MID), weight before and after, recorded weight change, and diet level (36, 48, 60, 72 or 84).
 
 ```{r}
 
@@ -204,3 +205,6 @@ df_preds %>%
 
 ```
 
+Interpretation and limitation
+Mean weight change appears higher at higher diet levels, although individual observations vary considerably. The ANOVA tests whether any group means differ.
+A limitation is that treating diet as categorical does not directly estimate a continuous relationship or predict weight change between the tested diet levels.
