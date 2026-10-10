@@ -19,7 +19,8 @@ library(performance)
 library(infer)
 library(tidyverse)
 ```
-
+Data checks
+Histograms show the distributions of the recorded measurements. I also check whether recorded weight change matches weight after minus weight before. Differences extremely close to zero may reflect numerical rounding.
 ```{r}
 df_WtDo <- read_csv("Santori_Wt_Change.csv")
 
@@ -58,7 +59,8 @@ hist(difference,
      breaks = 30)
 
 ```
-
+Analysis
+I first compare diet levels 36 and 84, then compare all five levels using a linear model and ANOVA. Diet is treated as a categorical variable. Model diagnostic plots are used to assess the assumptions.
 
 ```{r}
   # before weight= 100kg, after weight =10kg, wt_change=50 kg
@@ -155,7 +157,8 @@ df_Santori_fac <- df_WtDo %>%
 
 ```
 
-check if this worked  vv
+Figure
+Grey points show individual observations. Red points show estimated mean weight change for each diet level, with 95% confidence intervals.
 
 ```{r}
 levels(df_Santori_fac$Diet_fac)
